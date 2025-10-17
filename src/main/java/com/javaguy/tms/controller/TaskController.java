@@ -45,15 +45,50 @@ public class TaskController {
             summary = "List all tasks",
             description = "Retrieves all tasks with optional filters by status and tag"
     )
-    public ResponseEntity<List<TaskResponseDTO>> getAllTasks(
-            @Parameter(description = "Filter by task status")
-            @RequestParam(required = false) TaskStatus status,
+    public ResponseEntity<List<TaskResponseDTO>> getAllTasks() {
+        log.info("Fetching all tasks without filters");
+        return new ResponseEntity<>(taskService.getAllTasks(), HttpStatus.OK);
+    }
 
-            @Parameter(description = "Filter by tag name")
-            @RequestParam(required = false) String tag
+    @GetMapping("/status/{status}")
+    @Operation(
+            summary = "List tasks by status",
+            description = "Retrieves tasks filtered by a specific status"
+    )
+    public ResponseEntity<List<TaskResponseDTO>> getTasksByStatus(
+            @Parameter(description = "Filter by task status")
+            @PathVariable TaskStatus status
     ) {
-        log.info("Fetching tasks with status: {}, tag: {}", status, tag);
-        return new ResponseEntity<>(taskService.getAllTasks(status, tag), HttpStatus.OK);
+        log.info("Fetching tasks with status: {}", status);
+        return new ResponseEntity<>(taskService.getTasksByStatus(status), HttpStatus.OK);
+    }
+
+    @GetMapping("/tag/{tagName}")
+    @Operation(
+            summary = "List tasks by tag name",
+            description = "Retrieves tasks filtered by a specific tag name"
+    )
+    public ResponseEntity<List<TaskResponseDTO>> getTasksByTag(
+            @Parameter(description = "Filter by tag name")
+            @PathVariable String tagName
+    ) {
+        log.info("Fetching tasks with tag: {}", tagName);
+        return new ResponseEntity<>(taskService.getTasksByTag(tagName), HttpStatus.OK);
+    }
+
+    @GetMapping("/filter")
+    @Operation(
+            summary = "List tasks by status and tag",
+            description = "Retrieves tasks filtered by both status and tag"
+    )
+    public ResponseEntity<List<TaskResponseDTO>> getTasksByStatusAndTag(
+            @Parameter(description = "Filter by task status")
+            @RequestParam TaskStatus status,
+            @Parameter(description = "Filter by tag name")
+            @RequestParam String tag
+    ) {
+        log.info("Fetching tasks with status: {} and tag: {}", status, tag);
+        return new ResponseEntity<>(taskService.getTasksByStatusAndTag(status, tag), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
