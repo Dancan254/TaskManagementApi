@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: task-management-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taskdb
+    username: taskuser
+    password: taskpass
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, env, beans, threaddump, httptrace
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+  health:
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+
+
+google:
+  calendar:
+    calendar-id: x@group.calendar.google.com
+    application-name: task-management
+    key-path: "src/main/resources/service-account.json"
+    sync-enabled: true
+    webhook-url: https://c9f566f00397.ngrok-free.app
+    sync-token-path: "data/sync-token.txt"
+
+
+
+logging:
+  level:
+    root: INFO
+    com.javaguy.tms: DEBUG
+    org.springframework: INFO
+    com.google.api: debug
+
+server:
+  port: 8080
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
