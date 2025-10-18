@@ -121,6 +121,42 @@ While in the calendar settings, scroll to the **Integrate calendar** section.
 
 Copy the **Calendar ID**. (It's a long email-like string).
 
+### 4.4. Webhook Setup for Google Calendar Push Notifications
+
+For Google Calendar to push real-time updates to your application (e.g., when an event is updated or deleted directly in Google Calendar), you need a publicly accessible URL that Google can reach. Since your application runs locally, you'll need a tool to expose your local server to the internet.
+
+#### Using ngrok
+
+[ngrok](https://ngrok.com/) creates a secure tunnel to your localhost. This is ideal for testing webhooks during development.
+
+1.  **Download and Install ngrok**: Follow the instructions on the [ngrok website](https://ngrok.com/download).
+2.  **Authenticate ngrok**: Obtain your authtoken from the ngrok dashboard and connect it:
+    ```bash
+    ngrok authtoken <YOUR_NGROK_AUTHTOKEN>
+    ```
+3.  **Expose your local application**: Run ngrok to tunnel traffic to your application's port (default: 8080):
+    ```bash
+    ngrok http 8080
+    ```
+    ngrok will provide a public URL (e.g., `https://<random-subdomain>.ngrok-free.app`). Copy this URL.
+
+4.  **Configure Webhook in Google Cloud Console**:
+    Once you have your ngrok URL (or any other publicly accessible URL),
+    you'll need to subscribe to push notifications for your calendar.
+    Google Calendar push notifications are typically set up programmatically.
+    The application exposes a webhook endpoint at `/api/v1/webhooks/google-calendar-sync`.
+    
+    When your application starts, it will attempt to subscribe to push notifications for the configured calendar.
+    Ensure the `google.calendar.webhook-url` in your `application.yml` is set to your public ngrok URL (or equivalent).
+
+    ```yaml
+    google:
+      calendar:
+        # ... existing configurations ...
+        webhook-url: YOUR_NGROK_PUBLIC_URL/api/v1/webhooks/google-calendar-sync
+    ```
+    The application will handle the subscription process using this URL. You do *not* need to manually set up the webhook in the Google Cloud Console or Google Calendar UI; the application does it for you on startup.
+
 ## 5. Application Configuration
 
 Integrate the credentials into your Spring Boot project.
