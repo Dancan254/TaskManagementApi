@@ -2,45 +2,78 @@
 
 Setup Instructions
 
-This document provides step-by-step guide to setting up the database and configuring the Google Calendar API credentials for the Task Management API.
+step-by-step guide to setting up the database (using Docker) and configuring the Google Calendar API credentials for the Task Management API.
 
-## 1. Prerequisites
+## 1. Getting Started
+
+### 1.1. Clone the Repository
+
+First, clone the project from GitHub:
+
+```bash
+git clone https://github.com/Dancan254/TaskManagementApi.git
+cd TaskManagementApi
+```
+
+### 1.2. Prerequisites
 
 Ensure you have the following installed and configured:
 
-- Java 17+
+- Docker and Docker Compose (for database setup)
+- Java 25
 - Maven (or Gradle, if your build system uses it)
-- PostgreSQL (version 10 or later)
-- An IDE (IntelliJ IDEA, VS Code, etc)
+- An IDE (IntelliJ IDEA, VS Code, or Eclipse)
 - A Google Account for Google Cloud Console and Google Calendar access.
 
-## 2. PostgreSQL Database Setup
+## 2. Database Setup (using Docker Compose)
 
-The application uses PostgreSQL.
+The application uses PostgreSQL. We'll use Docker Compose to easily set up and run the database.
 
-**Access PostgreSQL**: Use your preferred PostgreSQL client (psql, pgAdmin, or DBeaver).
+1.  **Start PostgreSQL with Docker Compose**:
+    Navigate to the project root directory where `docker-compose.yml` is located and run:
+    ```bash
+    docker-compose up -d
+    ```
+    This will start a PostgreSQL container in the background. The database will be accessible at `localhost:5432`.
 
-**Create the Database and User**: Run the following SQL commands (using the credentials defined in the application's configuration):
+2.  **Verify Configuration**:
+    Ensure your `src/main/resources/application.yml` has the correct settings for connecting to the Dockerized PostgreSQL (these should already be correctly configured):
 
-```sql
--- Create the dedicated user
-CREATE USER taskuser WITH PASSWORD 'taskpass';
-
--- Create the database and assign ownership
-CREATE DATABASE taskdb OWNER taskuser;
-```
-
-**Verify Configuration**: Ensure your `src/main/resources/application.yml` has the correct settings:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/taskdb
-    username: taskuser
-    password: taskpass
-    # ... other configurations
-```
-
+    ```yaml
+    spring:
+      datasource:
+        url: jdbc:postgresql://localhost:5432/taskdb
+        username: taskuser
+        password: taskpass
+        # ... other configurations
+    ```
+> **Note:** If you already have PostgreSQL running on your machine, you have two options:
+>
+> **Option 1: Stop your local PostgreSQL**
+> ```bash
+> sudo systemctl stop postgresql
+> ```
+>
+> **Option 2: Remap the Docker port**
+> 
+> Edit `docker-compose.yml` and change the port mapping:
+> ```yaml
+> services:
+>   postgres:
+>     image: postgres:16-alpine
+>     ports:
+>       - "5433:5432"  # Change from 5432:5432 to 5433:5432
+>     # ... rest of config
+> ```
+>
+> Then update `src/main/resources/application.yml`:
+> ```yaml
+> spring:
+>   datasource:
+>     url: jdbc:postgresql://localhost:5433/taskdb  # Change port to 5433
+>     username: taskuser
+>     password: taskpass
+> 
 ## 3. Google Calendar API Setup (Service Account)
 
 The application uses a Service Account for application-level, programmatic sync with a single dedicated calendar.
@@ -218,3 +251,5 @@ curl -X GET "http://localhost:8080/api/tags" \
 curl -X GET "http://localhost:8080/api/tags/{tagName}/tasks" \
      -H "Accept: application/json"
 ```
+```
+Please apply this edit to your `README.md` file.
