@@ -1,8 +1,8 @@
 # Task Management API with Tags and Google Calendar Sync
 
-🛠️ Detailed Setup Instructions
+Setup Instructions
 
-This document provides a comprehensive, step-by-step guide to setting up the database and configuring the Google Calendar API credentials for the Task Management API.
+This document provides step-by-step guide to setting up the database and configuring the Google Calendar API credentials for the Task Management API.
 
 ## 1. Prerequisites
 
@@ -11,7 +11,7 @@ Ensure you have the following installed and configured:
 - Java 17+
 - Maven (or Gradle, if your build system uses it)
 - PostgreSQL (version 10 or later)
-- An IDE (IntelliJ IDEA, VS Code, or Eclipse)
+- An IDE (IntelliJ IDEA, VS Code, etc)
 - A Google Account for Google Cloud Console and Google Calendar access.
 
 ## 2. PostgreSQL Database Setup
