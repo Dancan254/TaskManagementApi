@@ -251,5 +251,3 @@ curl -X GET "http://localhost:8080/api/tags" \
 curl -X GET "http://localhost:8080/api/tags/{tagName}/tasks" \
      -H "Accept: application/json"
 ```
-```
-Please apply this edit to your `README.md` file.
