@@ -1,6 +1,7 @@
 package com.javaguy.tms.models.dto;
 
 import com.javaguy.tms.models.enums.TaskStatus;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
