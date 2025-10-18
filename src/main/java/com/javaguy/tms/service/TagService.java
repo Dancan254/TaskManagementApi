@@ -18,29 +18,46 @@ public class TagService {
 
     @Transactional
     public Set<Tag> getOrCreateTagsByNames(Set<String> names) {
-        if (names == null || names.isEmpty()) return new HashSet<>();
-        Set<String> normalized = names.stream()
+        if (names == null || names.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<String> normalizedNames = names.stream()
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
-        Map<String, Tag> found = tagRepository.findAll().stream()
-                .filter(t -> normalized.contains(t.getName().toLowerCase()))
-                .collect(Collectors.toMap(t -> t.getName().toLowerCase(), t -> t));
-        Set<Tag> result = new HashSet<>();
-        for (String name : normalized) {
-            Tag tag = found.get(name);
-            if (tag == null) {
-                tag = new Tag(name);
-                tagRepository.save(tag);
-            }
-            result.add(tag);
+
+        if (normalizedNames.isEmpty()) {
+            return Collections.emptySet();
         }
-        return result;
+
+        Set<Tag> existingTags = tagRepository.findByNameIn(normalizedNames);
+        Set<String> existingTagNames = existingTags.stream()
+                .map(Tag::getName)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        Set<Tag> newTags = normalizedNames.stream()
+                .filter(name -> !existingTagNames.contains(name))
+                .map(Tag::new)
+                .collect(Collectors.toSet());
+
+        if (!newTags.isEmpty()) {
+            tagRepository.saveAll(newTags);
+            existingTags.addAll(newTags);
+        }
+
+        return existingTags;
     }
 
     public List<Tag> getAll() {
         return tagRepository.findAll();
+    }
+
+    @Transactional
+    public boolean existsByName(String name) {
+        return tagRepository.existsByName(name);
     }
 }
