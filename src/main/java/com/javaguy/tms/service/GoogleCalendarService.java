@@ -193,13 +193,23 @@ public class GoogleCalendarService {
             Task task = taskOptional.get();
             log.info("Syncing update from Calendar Event {} to Task {}", event.getId(), taskId);
 
-            // Update task fields from the event
-            task.setTitle(event.getSummary());
-            task.setDescription(event.getDescription());
-            if (event.getStart() != null && event.getStart().getDateTime() != null) {
-                task.setDueDate(java.time.Instant.ofEpochMilli(event.getStart().getDateTime().getValue()).atZone(java.time.ZoneId.of("UTC")).toLocalDateTime());
+            DateTime calendarEventUpdated = event.getUpdated();
+            if (calendarEventUpdated == null || task.getUpdatedAt() == null ||
+                    calendarEventUpdated.getValue() > task.getUpdatedAt().atZone(ZoneId.of("UTC")).toInstant().toEpochMilli()) {
+
+                if (event.getSummary() != null) {
+                    task.setTitle(event.getSummary());
+                }
+                if (event.getDescription() != null) {
+                    task.setDescription(event.getDescription());
+                }
+                if (event.getStart() != null && event.getStart().getDateTime() != null) {
+                    task.setDueDate(java.time.Instant.ofEpochMilli(event.getStart().getDateTime().getValue()).atZone(java.time.ZoneId.of("UTC")).toLocalDateTime());
+                }
+                taskRepository.save(task);
+            } else {
+                log.info("Skipping update from Calendar Event {} as Task {} was more recently updated.", event.getId(), taskId);
             }
-            taskRepository.save(task);
         }
     }
 
@@ -312,7 +322,7 @@ public class GoogleCalendarService {
                 "source", "task-management-api"
         ));
         event.setExtendedProperties(extendedProperties);
-
+        event.setUpdated(new DateTime(task.getUpdatedAt().atZone(ZoneId.of("UTC")).toInstant().toEpochMilli()));
         return event;
     }
     private String getColorIdForStatus(TaskStatus status) {
