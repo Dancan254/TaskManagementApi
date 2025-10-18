@@ -64,26 +64,33 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskResponseDTO> getAllTasks(TaskStatus status, String tagName) {
-        log.info("Fetching tasks with status: {}, tag: {}", status, tagName);
+    public List<TaskResponseDTO> getAllTasks() {
+        log.debug("Fetching all tasks");
+        return taskRepository.findAll().stream()
+                .map(TaskMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
-        List<Task> tasks;
+    @Transactional(readOnly = true)
+    public List<TaskResponseDTO> getTasksByStatus(TaskStatus status) {
+        log.debug("Fetching tasks by status: {}", status);
+        return taskRepository.findTasksByStatus(status).stream()
+                .map(TaskMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
-        if (status != null && tagName != null) {
-            log.debug("Filtering by status AND tag");
-            tasks = taskRepository.findTasksByStatusAndTagName(status, tagName);
-        } else if (status != null) {
-            log.debug("Filtering by status only");
-            tasks = taskRepository.findTasksByStatus(status);
-        } else if (tagName != null) {
-            log.debug("Filtering by tag only");
-            tasks = taskRepository.findTasksByTagName(tagName);
-        } else {
-            log.debug("Fetching all tasks");
-            tasks = taskRepository.findAll();
-        }
+    @Transactional(readOnly = true)
+    public List<TaskResponseDTO> getTasksByTag(String tagName) {
+        log.debug("Fetching tasks by tag: {}", tagName);
+        return taskRepository.findTasksByTagName(tagName).stream()
+                .map(TaskMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
-        return tasks.stream()
+    @Transactional(readOnly = true)
+    public List<TaskResponseDTO> getTasksByStatusAndTag(TaskStatus status, String tagName) {
+        log.debug("Fetching tasks by status: {} and tag: {}", status, tagName);
+        return taskRepository.findTasksByStatusAndTagName(status, tagName).stream()
                 .map(TaskMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -95,11 +102,13 @@ public class TaskService {
         Task existing = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + id));
 
-        // Optimistic locking check
-        if (dto.getVersion() != null && !Objects.equals(existing.getVersion(), dto.getVersion())) {
-            throw new OptimisticLockException(
-                    "Version mismatch. Expected " + existing.getVersion() + ", got " + dto.getVersion()
-            );
+        // Optimistic locking check (only if version is provided)
+        if (dto.getVersion() != null) {
+            if (!Objects.equals(existing.getVersion(), dto.getVersion())) {
+                throw new OptimisticLockException(
+                        "Version mismatch. Expected " + existing.getVersion() + ", got " + dto.getVersion()
+                );
+            }
         }
 
         // Update fields if provided
